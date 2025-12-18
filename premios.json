@@ -1,0 +1,30 @@
+[
+  {
+    "nombre": "TV 55\" 4K Smart",
+    "precio": 299.99,
+    "descripcion": "Televisor inteligente Ultra HD",
+    "stock": 50,
+    "icono": "fa-tv"
+  },
+  {
+    "nombre": "iPhone 15 Pro",
+    "precio": 999.99,
+    "descripcion": "128GB - Color Natural Titanio",
+    "stock": 30,
+    "icono": "fa-mobile-alt"
+  },
+  {
+    "nombre": "Consola Xbox Series X",
+    "precio": 599.99,
+    "descripcion": "1TB + Game Pass 12 meses",
+    "stock": 20,
+    "icono": "fa-gamepad"
+  },
+  {
+    "nombre": "Viaje a Cancún",
+    "precio": 1500.00,
+    "descripcion": "Todo incluido 7 días 6 noches",
+    "stock": 5,
+    "icono": "fa-plane"
+  }
+]
