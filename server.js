@@ -84,18 +84,19 @@ function inicializarBD() {
 
 
    // Tabla numeros de rifa (REAL)
-  db.run(`
-    CREATE TABLE IF NOT EXISTS numeros (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      premio_id INTEGER NOT NULL,
-      numero INTEGER NOT NULL,
-      estado TEXT DEFAULT 'disponible',
-      email TEXT,
-      payment_id TEXT,
-      fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(premio_id, numero)
-    )
-  `);
+db.run(`
+  CREATE TABLE IF NOT EXISTS numeros_rifa (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    premio_id INTEGER NOT NULL,
+    numero INTEGER NOT NULL,
+    estado TEXT DEFAULT 'disponible',
+    email TEXT,
+    compra_id INTEGER,
+    fecha_reserva TIMESTAMP,
+    fecha_venta TIMESTAMP,
+    UNIQUE(premio_id, numero)
+  )
+`);
 
   // Tabla para logs de webhooks
   db.run(`
