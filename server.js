@@ -82,22 +82,7 @@ function inicializarBD() {
     )
   `);
 
-  // Tabla para números de rifa (NUEVO)
-  db.run(`
-    CREATE TABLE IF NOT EXISTS numeros_rifa (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      premio_id INTEGER NOT NULL,
-      compra_id INTEGER,
-      numero INTEGER NOT NULL,
-      estado TEXT DEFAULT 'disponible',
-      email TEXT,
-      fecha_reserva TIMESTAMP,
-      fecha_venta TIMESTAMP,
-      UNIQUE(premio_id, numero),
-      FOREIGN KEY (premio_id) REFERENCES premios(id),
-      FOREIGN KEY (compra_id) REFERENCES compras(id)
-    )
-  `);
+
    // Tabla numeros de rifa (REAL)
   db.run(`
     CREATE TABLE IF NOT EXISTS numeros (
@@ -203,24 +188,23 @@ app.get('/api/numeros/:premioId', (req, res) => {
   const { premioId } = req.params;
 
   db.all(
-    `SELECT numero, estado, email
-     FROM numeros
+    `SELECT numero, estado, email, fecha_reserva, fecha_venta
+     FROM numeros_rifa
      WHERE premio_id = ?
      ORDER BY numero`,
     [premioId],
-    (err, rows) => {
+    (err, numeros) => {
       if (err) {
-        return res.status(500).json({ error: 'Error obteniendo números' });
+        return res.status(500).json({ error: 'Error números' });
       }
 
       res.json({
         success: true,
-        numeros: rows
+        numeros
       });
     }
   );
 });
-
     
     // Obtener también información del premio
     db.get(
@@ -635,27 +619,7 @@ app.post('/api/webhook', async (req, res) => {
         // 4. Si el pago fue aprobado, actualizar stock, vendidos y números
         if (mpPayment.status === 'approved') {
           // Asignar números vendidos
-db.all(
-  `SELECT id, numero FROM numeros
-   WHERE premio_id = ?
-   AND estado = 'disponible'
-   LIMIT ?`,
-  [compra.premio_id, compra.cantidad],
-  (err, numerosAsignados) => {
-    if (err) return;
 
-    numerosAsignados.forEach(n => {
-      db.run(
-        `UPDATE numeros
-         SET estado = 'vendido',
-             email = ?,
-             payment_id = ?
-         WHERE id = ?`,
-        [compra.email, paymentId, n.id]
-      );
-    });
-  }
-);
           console.log(`✅ Pago aprobado: ${paymentId} para compra ${compra.id}`);
           
           // Obtener datos de la compra
