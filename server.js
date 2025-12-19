@@ -2728,7 +2728,6 @@ app.use((err, req, res, next) => {
 // ============ INICIAR SERVIDOR ============
 app.listen(PUERTO, () => {
   console.log(`🚀 SERVIDOR ACTIVO en puerto ${PUERTO}`);
-  console.log(`🚀 SERVIDOR DE PRODUCCIÓN ACTIVO en ${DOMINIO}`);
   console.log(`💰 MERCADOPAGO: MODO PRODUCCIÓN`);
   console.log(`🔢 SISTEMA DE NÚMEROS: ACTIVADO`);
   console.log(`🔑 Token: ${MP_ACCESS_TOKEN.substring(0, 15)}...`);
