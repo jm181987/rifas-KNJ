@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pago Pendiente - Sistema de Rifas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .pending-box {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        .pending-icon {
+            font-size: 5rem;
+            color: #FF9800;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        h1 { color: #2D3047; margin-bottom: 20px; }
+        p { color: #666; margin-bottom: 15px; line-height: 1.6; }
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 10px;
+            transition: transform 0.3s;
+        }
+        .btn:hover { transform: translateY(-3px); }
+    </style>
+</head>
+<body>
+    <div class="pending-box">
+        <div class="pending-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <h1>Pago Pendiente ⏳</h1>
+        <p>Tu pago está siendo procesado.</p>
+        <p>Te notificaremos por email cuando se complete la transacción.</p>
+        <p style="font-size: 0.9rem; color: #888;">
+            <i class="fas fa-info-circle"></i>
+            Esto puede tardar unos minutos.
+        </p>
+        <a href="/" class="btn">
+            <i class="fas fa-home"></i> Volver al Inicio
+        </a>
+    </div>
+</body>
+</html>

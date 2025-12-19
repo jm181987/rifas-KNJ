@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Rifas - Premios Increíbles</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .premios-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .premio-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .premio-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .premio-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .premio-icon i {
+            font-size: 3rem;
+        }
+
+        .premio-content {
+            padding: 25px;
+        }
+
+        .premio-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #2D3047;
+        }
+
+        .premio-desc {
+            color: #666;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+
+        .premio-precio {
+            font-size: 2rem;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .premio-stock {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stock-info {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .stock-bar {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            flex-grow: 1;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .stock-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+
+        .comprar-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .comprar-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .comprar-btn:active {
+            transform: scale(0.98);
+        }
+
+        .comprar-btn.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            padding: 40px;
+            position: relative;
+            animation: modalAppear 0.3s ease;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .cantidad-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cantidad-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cantidad-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* Estilos para números de rifa (NUEVO) */
+        .numeros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .numero-btn {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .numero-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .numero-btn.disponible {
+            border-color: #4CAF50;
+            background: #f8fff8;
+            color: #2E7D32;
+        }
+
+        .numero-btn.seleccionado {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .numero-btn.vendido {
+            border-color: #f44336;
+            background: #ffebee;
+            color: #c62828;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .numero-btn.reservado {
+            border-color: #FF9800;
+            background: #fff3e0;
+            color: #EF6C00;
+            cursor: not-allowed;
+        }
+
+        .cargando-numeros {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .cargando-numeros i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal-opciones {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .opcion-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .opcion-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .opcion-btn.activa {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .opcion-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .total-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .total-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .total-amount {
+            font-size: 2.5rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .pagar-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .admin-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            color: #667eea;
+            padding: 12px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.3s;
+            z-index: 100;
+        }
+
+        .admin-link:hover {
+            transform: translateY(-5px);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            opacity: 0.8;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .premios-container {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-bar {
+                gap: 15px;
+            }
+            
+            .stat-item {
+                min-width: 120px;
+                padding: 12px 15px;
+            }
+            
+            .modal-content {
+                padding: 25px;
+                width: 95%;
+            }
+            
+            .numeros-grid {
+                grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            }
+            
+            .numero-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-gift"></i> Sistema de Rifas</h1>
+        <p>Participa por increíbles premios eligiendo tus números. ¡Cada rifa tiene su número único!</p>
+        
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number" id="total-premios">0</div>
+                <div class="stat-label">Premios Activos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="total-stock">0</div>
+                <div class="stat-label">Rifas Disponibles</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="total-vendidas">0</div>
+                <div class="stat-label">Rifas Vendidas</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Mensaje de error -->
+        <div class="error" id="error-message"></div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner"></i>
+            <p>Cargando premios disponibles...</p>
+        </div>
+
+        <!-- Lista de premios -->
+        <div class="premios-container" id="premios-container">
+            <!-- Los premios se cargan aquí con JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal para comprar -->
+    <div class="modal" id="compra-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal">&times;</button>
+            <h2 id="modal-premio-nombre">Nombre del Premio</h2>
+            <p id="modal-premio-desc" style="color: #666; margin-bottom: 25px;"></p>
+            
+            <form id="compra-form">
+                <input type="hidden" id="modal-premio-id">
+                <input type="hidden" id="modal-premio-precio">
+                
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Tu Nombre</label>
+                    <input type="text" id="compra-nombre" placeholder="Ingresa tu nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="compra-email" placeholder="tu@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Teléfono (opcional)</label>
+                    <input type="tel" id="compra-telefono" placeholder="+54 11 1234-5678">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-ticket-alt"></i> Cantidad de Rifas</label>
+                    <div class="cantidad-selector">
+                        <button type="button" class="cantidad-btn" id="menos-rifas">-</button>
+                        <div class="cantidad-display" id="cantidad-rifas">1</div>
+                        <button type="button" class="cantidad-btn" id="mas-rifas">+</button>
+                    </div>
+                    <small style="color: #666; display: block; margin-top: 8px;">
+                        Stock disponible: <span id="modal-stock-disponible">0</span> rifas
+                    </small>
+                </div>
+                
+                <!-- Opciones de selección de números (NUEVO) -->
+                <div class="form-group">
+                    <label><i class="fas fa-magic"></i> ¿Cómo quieres tus números?</label>
+                    <div class="modal-opciones">
+                        <button type="button" class="opcion-btn activa" data-modo="aleatorio">
+                            <i class="fas fa-random"></i>
+                            Aleatorios
+                        </button>
+                        <button type="button" class="opcion-btn" data-modo="manual">
+                            <i class="fas fa-mouse-pointer"></i>
+                            Elegir yo
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Grid de números (se muestra solo en modo manual) -->
+                <div class="form-group" id="numeros-container" style="display: none;">
+                    <label><i class="fas fa-hashtag"></i> Selecciona tus números</label>
+                    <div class="numeros-grid" id="numeros-grid">
+                        <!-- Los números se cargarán aquí -->
+                    </div>
+                    <small style="color: #666; display: block; margin-top: 8px;">
+                        Haz clic en los números para seleccionarlos. Seleccionados: 
+                        <span id="numeros-seleccionados-count">0</span>
+                        <span id="numeros-seleccionados-list" style="margin-left: 10px; font-weight: bold;"></span>
+                    </small>
+                </div>
+                
+                <div class="total-section">
+                    <div class="total-label">Total a pagar</div>
+                    <div class="total-amount">$<span id="total-pago">0</span></div>
+                </div>
+                
+                <button type="submit" class="pagar-btn" id="pagar-btn">
+                    <i class="fas fa-lock"></i> Proceder al Pago
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Link al admin -->
+    <a href="/admin?user=admin&pass=admin123" class="admin-link">
+        <i class="fas fa-crown"></i> Admin
+    </a>
+
+    <footer>
+        <p>© 2024 Sistema de Rifas - Todos los derechos reservados</p>
+        <p style="margin-top: 10px; font-size: 0.9rem;">
+            Sistema seguro de compra y venta de rifas mediante MercadoPago
+        </p>
+    </footer>
+
+    <script>
+        // ============ CONFIGURACIÓN ============
+        const API_URL = window.location.origin;
+        let premios = [];
+        let premioSeleccionado = null;
+        let numerosSeleccionados = [];
+        let modoSeleccion = 'aleatorio'; // 'aleatorio' o 'manual'
+        let cantidadRifas = 1;
+
+        // ============ FUNCIONES PRINCIPALES ============
+
+        // Cargar premios desde la API
+        async function cargarPremios() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('premios-container').innerHTML = '';
+                
+                const response = await fetch(`${API_URL}/api/premios`);
+                if (!response.ok) throw new Error('Error al cargar premios');
+                
+                premios = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (premios.length === 0) {
+                    document.getElementById('premios-container').innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: white;">
+                            <i class="fas fa-gift fa-3x" style="margin-bottom: 20px;"></i>
+                            <h3>No hay premios disponibles en este momento</h3>
+                            <p>Pronto agregaremos nuevos premios. ¡Vuelve a consultar!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Actualizar estadísticas
+                actualizarEstadisticas();
+                
+                // Mostrar premios
+                mostrarPremios();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Error al cargar los premios. Recarga la página.</p>
+                    <button onclick="cargarPremios()" style="margin-top: 20px; padding: 10px 20px; background: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Reintentar
+                    </button>
+                `;
+            }
+        }
+
+        // Actualizar estadísticas en el header
+        function actualizarEstadisticas() {
+            if (premios.length > 0) {
+                const totalPremios = premios.length;
+                const totalStock = premios.reduce((sum, premio) => sum + premio.stock, 0);
+                const totalVendidas = premios.reduce((sum, premio) => sum + (premio.vendidos || 0), 0);
+                
+                document.getElementById('total-premios').textContent = totalPremios;
+                document.getElementById('total-stock').textContent = totalStock;
+                document.getElementById('total-vendidas').textContent = totalVendidas;
+            }
+        }
+
+        // Mostrar premios en la página
+        function mostrarPremios() {
+            const container = document.getElementById('premios-container');
+            container.innerHTML = '';
+            
+            premios.forEach(premio => {
+                const porcentajeVendido = premio.stock > 0 ? 
+                    Math.min(100, ((premio.vendidos || 0) / (premio.stock + (premio.vendidos || 0))) * 100) : 0;
+                const stockDisponible = premio.stock - (premio.vendidos || 0);
+                
+                const card = document.createElement('div');
+                card.className = 'premio-card';
+                card.innerHTML = `
+                    <div class="premio-icon">
+                        <i class="fas ${premio.icono || 'fa-gift'}"></i>
+                    </div>
+                    <div class="premio-content">
+                        <h3>${premio.nombre}</h3>
+                        <p class="premio-desc">${premio.descripcion || '¡Un premio increíble!'}</p>
+                        
+                        <div class="premio-precio">$${premio.precio} <small style="font-size: 1rem; color: #666;">por rifa</small></div>
+                        
+                        <div class="premio-stock">
+                            <span class="stock-info">Disponibles: ${stockDisponible}</span>
+                            <div class="stock-bar">
+                                <div class="stock-fill" style="width: ${porcentajeVendido}%"></div>
+                            </div>
+                            <span class="stock-info">Vendidas: ${premio.vendidos || 0}</span>
+                        </div>
+                        
+                        <button class="comprar-btn ${stockDisponible === 0 ? 'disabled' : ''}" 
+                                onclick="${stockDisponible > 0 ? `abrirModalCompra(${premio.id})` : ''}">
+                            ${stockDisponible > 0 ? 
+                                '<i class="fas fa-shopping-cart"></i> Comprar Rifa' : 
+                                '<i class="fas fa-times-circle"></i> Agotado'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ============ SISTEMA DE NÚMEROS (NUEVO) ============
+
+        // Cargar números disponibles
+        async function cargarNumerosDisponibles(premioId) {
+            try {
+                const response = await fetch(`${API_URL}/api/numeros/${premioId}?estado=disponible`);
+                const data = await response.json();
+                
+                const grid = document.getElementById('numeros-grid');
+                grid.innerHTML = '';
+                
+                if (data.numeros && data.numeros.length > 0) {
+                    // Crear botones para cada número disponible
+                    data.numeros.forEach(numero => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'numero-btn disponible';
+                        btn.textContent = numero.numero;
+                        btn.title = `Número ${numero.numero} - Disponible`;
+                        btn.onclick = () => toggleNumero(numero.numero);
+                        grid.appendChild(btn);
+                    });
+                    
+                    // Actualizar contador de disponibles
+                    document.getElementById('modal-stock-disponible').textContent = data.premio?.disponibles || data.numeros.length;
+                    
+                } else {
+                    grid.innerHTML = `
+                        <div class="cargando-numeros">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>No hay números disponibles</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error cargando números:', error);
+                document.getElementById('numeros-grid').innerHTML = `
+                    <div class="cargando-numeros">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error al cargar números</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Alternar selección de número
+        function toggleNumero(numero) {
+            if (modoSeleccion !== 'manual') return;
+            
+            const index = numerosSeleccionados.indexOf(numero);
+            
+            if (index === -1) {
+                // Verificar que no exceda la cantidad seleccionada
+                if (numerosSeleccionados.length >= cantidadRifas) {
+                    mostrarError(`Ya seleccionaste ${cantidadRifas} número(s).`);
+                    return;
+                }
+                numerosSeleccionados.push(numero);
+            } else {
+                numerosSeleccionados.splice(index, 1);
+            }
+            
+            actualizarUINumeros();
+            calcularTotal();
+        }
+
+        // Actualizar UI de números
+        function actualizarUINumeros() {
+            // Actualizar botones
+            document.querySelectorAll('.numero-btn').forEach(btn => {
+                const num = parseInt(btn.textContent);
+                btn.classList.remove('seleccionado');
+                
+                if (numerosSeleccionados.includes(num)) {
+                    btn.classList.add('seleccionado');
+                }
+            });
+            
+            // Actualizar contador y lista
+            const countSpan = document.getElementById('numeros-seleccionados-count');
+            const listSpan = document.getElementById('numeros-seleccionados-list');
+            
+            countSpan.textContent = numerosSeleccionados.length;
+            
+            if (numerosSeleccionados.length > 0) {
+                listSpan.textContent = numerosSeleccionados.sort((a, b) => a - b).join(', ');
+            } else {
+                listSpan.textContent = '';
+            }
+        }
+
+        // Cambiar modo de selección
+        function cambiarModoSeleccion(modo) {
+            modoSeleccion = modo;
+            numerosSeleccionados = [];
+            
+            // Actualizar botones de opción
+            document.querySelectorAll('.opcion-btn').forEach(btn => {
+                btn.classList.remove('activa');
+                if (btn.dataset.modo === modo) {
+                    btn.classList.add('activa');
+                }
+            });
+            
+            // Mostrar/ocultar container de números
+            const container = document.getElementById('numeros-container');
+            if (modo === 'manual') {
+                container.style.display = 'block';
+                if (premioSeleccionado) {
+                    cargarNumerosDisponibles(premioSeleccionado.id);
+                }
+            } else {
+                container.style.display = 'none';
+            }
+            
+            actualizarUINumeros();
+            calcularTotal();
+        }
+
+        // ============ MODAL DE COMPRA ============
+
+        function abrirModalCompra(premioId) {
+            premioSeleccionado = premios.find(p => p.id === premioId);
+            if (!premioSeleccionado) return;
+            
+            cantidadRifas = 1;
+            numerosSeleccionados = [];
+            modoSeleccion = 'aleatorio';
+            
+            // Llenar datos del modal
+            document.getElementById('modal-premio-id').value = premioSeleccionado.id;
+            document.getElementById('modal-premio-precio').value = premioSeleccionado.precio;
+            document.getElementById('modal-premio-nombre').textContent = premioSeleccionado.nombre;
+            document.getElementById('modal-premio-desc').textContent = premioSeleccionado.descripcion || '';
+            document.getElementById('modal-stock-disponible').textContent = premioSeleccionado.stock - (premioSeleccionado.vendidos || 0);
+            document.getElementById('cantidad-rifas').textContent = cantidadRifas;
+            
+            // Resetear UI de números
+            document.getElementById('numeros-seleccionados-count').textContent = '0';
+            document.getElementById('numeros-seleccionados-list').textContent = '';
+            
+            // Actualizar botones de opción
+            document.querySelectorAll('.opcion-btn').forEach(btn => {
+                btn.classList.remove('activa');
+                if (btn.dataset.modo === 'aleatorio') {
+                    btn.classList.add('activa');
+                }
+            });
+            
+            // Ocultar grid inicialmente
+            document.getElementById('numeros-container').style.display = 'none';
+            
+            // Calcular total inicial
+            calcularTotal();
+            
+            // Mostrar modal
+            document.getElementById('compra-modal').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('compra-modal').style.display = 'none';
+            document.getElementById('compra-form').reset();
+            cantidadRifas = 1;
+            premioSeleccionado = null;
+            numerosSeleccionados = [];
+        }
+
+        function calcularTotal() {
+            if (!premioSeleccionado) return;
+            
+            const precio = parseFloat(premioSeleccionado.precio);
+            const total = precio * cantidadRifas;
+            
+            document.getElementById('total-pago').textContent = total.toFixed(2);
+            
+            const stockDisponible = premioSeleccionado.stock - (premioSeleccionado.vendidos || 0);
+            const pagarBtn = document.getElementById('pagar-btn');
+            
+            let error = null;
+            
+            // Validaciones
+            if (cantidadRifas > stockDisponible) {
+                error = `Solo quedan ${stockDisponible} rifas disponibles`;
+            } else if (modoSeleccion === 'manual' && numerosSeleccionados.length !== cantidadRifas) {
+                error = `Debes seleccionar exactamente ${cantidadRifas} número(s)`;
+            }
+            
+            if (error) {
+                mostrarError(error);
+                pagarBtn.disabled = true;
+                pagarBtn.style.opacity = '0.5';
+            } else {
+                ocultarError();
+                pagarBtn.disabled = false;
+                pagarBtn.style.opacity = '1';
+            }
+        }
+
+        // ============ MANEJO DE ERRORES ============
+
+        function mostrarError(mensaje) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${mensaje}`;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(ocultarError, 5000);
+        }
+
+        function ocultarError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        // ============ PAGO CON MERCADOPAGO ============
+
+        async function procesarPago(event) {
+            event.preventDefault();
+            
+            if (!premioSeleccionado) return;
+            
+            const formData = {
+                premioId: premioSeleccionado.id,
+                email: document.getElementById('compra-email').value.trim(),
+                nombre: document.getElementById('compra-nombre').value.trim(),
+                telefono: document.getElementById('compra-telefono').value.trim(),
+                cantidad: cantidadRifas,
+                numeros: modoSeleccion === 'manual' ? numerosSeleccionados : undefined
+            };
+            
+            // Validaciones
+            if (!formData.email || !formData.nombre) {
+                mostrarError('Por favor, completa todos los campos requeridos');
+                return;
+            }
+            
+            if (cantidadRifas < 1) {
+                mostrarError('Selecciona al menos 1 rifa');
+                return;
+            }
+            
+            const stockDisponible = premioSeleccionado.stock - (premioSeleccionado.vendidos || 0);
+            if (cantidadRifas > stockDisponible) {
+                mostrarError(`Solo quedan ${stockDisponible} rifas disponibles`);
+                return;
+            }
+            
+            if (modoSeleccion === 'manual' && numerosSeleccionados.length !== cantidadRifas) {
+                mostrarError(`Debes seleccionar exactamente ${cantidadRifas} número(s)`);
+                return;
+            }
+            
+            // Deshabilitar botón mientras se procesa
+            const pagarBtn = document.getElementById('pagar-btn');
+            const originalText = pagarBtn.innerHTML;
+            pagarBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            pagarBtn.disabled = true;
+            
+            try {
+                console.log('Enviando datos de compra con números:', formData.numeros);
+                
+                const response = await fetch(`${API_URL}/api/crear-pago`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Error al crear el pago');
+                }
+                
+                console.log('Pago creado:', data);
+                
+                // Redirigir a MercadoPago
+                if (data.init_point) {
+                    window.location.href = data.init_point;
+                } else {
+                    mostrarError('No se pudo obtener el enlace de pago');
+                    pagarBtn.innerHTML = originalText;
+                    pagarBtn.disabled = false;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError(error.message || 'Error al procesar el pago');
+                pagarBtn.innerHTML = originalText;
+                pagarBtn.disabled = false;
+            }
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar premios al inicio
+            cargarPremios();
+            
+            // Modal listeners
+            document.getElementById('close-modal').addEventListener('click', cerrarModal);
+            document.getElementById('compra-modal').addEventListener('click', function(e) {
+                if (e.target === this) cerrarModal();
+            });
+            
+            // Cantidad selectors
+            document.getElementById('menos-rifas').addEventListener('click', function() {
+                if (cantidadRifas > 1) {
+                    cantidadRifas--;
+                    document.getElementById('cantidad-rifas').textContent = cantidadRifas;
+                    
+                    // Si estamos en modo manual y tenemos más números seleccionados que la nueva cantidad
+                    if (modoSeleccion === 'manual' && numerosSeleccionados.length > cantidadRifas) {
+                        numerosSeleccionados = numerosSeleccionados.slice(0, cantidadRifas);
+                        actualizarUINumeros();
+                    }
+                    
+                    calcularTotal();
+                }
+            });
+            
+            document.getElementById('mas-rifas').addEventListener('click', function() {
+                cantidadRifas++;
+                document.getElementById('cantidad-rifas').textContent = cantidadRifas;
+                
+                // Si cambiamos de cantidad, resetear números seleccionados en modo manual
+                if (modoSeleccion === 'manual') {
+                    numerosSeleccionados = [];
+                    actualizarUINumeros();
+                }
+                
+                calcularTotal();
+            });
+            
+            // Botones de opción de números
+            document.querySelectorAll('.opcion-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modo = this.dataset.modo;
+                    cambiarModoSeleccion(modo);
+                });
+            });
+            
+            // Form submit
+            document.getElementById('compra-form').addEventListener('submit', procesarPago);
+            
+            // Recargar cada 30 segundos para ver stock actualizado
+            setInterval(cargarPremios, 30000);
+            
+            // Botón de refresh manual
+            const refreshBtn = document.createElement('button');
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            refreshBtn.style.cssText = `
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                background: white;
+                color: #667eea;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                border: none;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                font-size: 1.2rem;
+                cursor: pointer;
+                z-index: 100;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            refreshBtn.addEventListener('click', cargarPremios);
+            document.body.appendChild(refreshBtn);
+        });
+
+        // Permitir cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') cerrarModal();
+        });
+    </script>
+</body>
+</html>
