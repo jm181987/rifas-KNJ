@@ -8,20 +8,6 @@ const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const app = express();
 
 
-app.use(express.json());
-
-/* SERVIR FRONTEND */
-app.use(express.static("public"));
-
-/* OPCIONAL: fallback al index */
-app.get("/", (req, res) => {
-  res.sendFile(path.resolve("public", "index.html"));
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("Servidor en puerto", PORT);
-});
 
 // ============ CONFIGURACIÓN MERCADOPAGO REAL ============
 const MP_ACCESS_TOKEN = 'APP_USR-5767269400108111-121011-4cffa1d6521c32952b93d4a153bc6568-81252460';
