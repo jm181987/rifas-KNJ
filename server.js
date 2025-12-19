@@ -199,10 +199,25 @@ app.get('/api/numeros/:premioId', (req, res) => {
         return res.status(500).json({ error: 'Error números' });
       }
 
-      res.json({
-        success: true,
-        numeros
-      });
+      db.get(
+        'SELECT stock, vendidos FROM premios WHERE id = ?',
+        [premioId],
+        (err, premio) => {
+          const disponibles = premio
+            ? premio.stock - premio.vendidos
+            : 0;
+
+          res.json({
+            success: true,
+            numeros,
+            premio: {
+              stock: premio?.stock || 0,
+              vendidos: premio?.vendidos || 0,
+              disponibles
+            }
+          });
+        }
+      );
     }
   );
 });
@@ -580,16 +595,17 @@ app.post('/api/webhook', async (req, res) => {
       console.log(`📊 Estado pago ${paymentId}:`, mpPayment.status);
       
       // 2. Buscar compra en nuestra BD
-      const compra = await new Promise((resolve, reject) => {
-        db.get(
-          'SELECT * FROM compras WHERE payment_id = ? OR preference_id = ?',
-          [paymentId, paymentId],
-          (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-          }
-        );
-      });
+     const compra = await new Promise((resolve, reject) => {
+  db.get(
+    `SELECT * FROM compras 
+     WHERE preference_id = ?`,
+    [mpPayment.preference_id],
+    (err, row) => {
+      if (err) reject(err);
+      else resolve(row);
+    }
+  );
+});
 
       if (compra) {
         // 3. Actualizar estado de la compra
@@ -2288,7 +2304,7 @@ app.post('/api/admin/premios', (req, res) => {
       // Crear números reales para el premio
 for (let i = 1; i <= parseInt(stock); i++) {
   db.run(
-    `INSERT INTO numeros (premio_id, numero) VALUES (?, ?)`,
+    `INSERT INTO numeros_rifa (premio_id, numero) VALUES (?, ?)`,
     [nuevoId, i]
   );
 }
