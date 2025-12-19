@@ -7,21 +7,6 @@ const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 
 const app = express();
 
-// ============ CONFIGURACIÓN MERCADOPAGO REAL ============
-const MP_ACCESS_TOKEN = 'APP_USR-5767269400108111-121011-4cffa1d6521c32952b93d4a153bc6568-81252460';
-const MP_PUBLIC_KEY = 'APP_USR-6ef35d3e-1d77-4066-adcd-5c520bd96081';
-
-const client = new MercadoPagoConfig({
-  accessToken: MP_ACCESS_TOKEN,
-  options: { timeout: 10000 }
-});
-
-// ============ CONFIGURACIÓN SERVIDOR ============
-const DOMINIO = 'http://localhost:3000';
-const PUERTO = 3000;
-
-
-const app = express();
 
 app.use(express.json());
 
@@ -37,6 +22,22 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Servidor en puerto", PORT);
 });
+
+// ============ CONFIGURACIÓN MERCADOPAGO REAL ============
+const MP_ACCESS_TOKEN = 'APP_USR-5767269400108111-121011-4cffa1d6521c32952b93d4a153bc6568-81252460';
+const MP_PUBLIC_KEY = 'APP_USR-6ef35d3e-1d77-4066-adcd-5c520bd96081';
+
+const client = new MercadoPagoConfig({
+  accessToken: MP_ACCESS_TOKEN,
+  options: { timeout: 10000 }
+});
+
+// ============ CONFIGURACIÓN SERVIDOR ============
+const DOMINIO = 'http://localhost:3000';
+const PUERTO = 3000;
+
+
+
 // ============ MIDDLEWARE ============
 app.use(cors({
   origin: DOMINIO,
