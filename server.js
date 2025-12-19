@@ -98,6 +98,19 @@ function inicializarBD() {
       FOREIGN KEY (compra_id) REFERENCES compras(id)
     )
   `);
+   // Tabla numeros de rifa (REAL)
+  db.run(`
+    CREATE TABLE IF NOT EXISTS numeros (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      premio_id INTEGER NOT NULL,
+      numero INTEGER NOT NULL,
+      estado TEXT DEFAULT 'disponible',
+      email TEXT,
+      payment_id TEXT,
+      fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(premio_id, numero)
+    )
+  `);
 
   // Tabla para logs de webhooks
   db.run(`
@@ -186,28 +199,28 @@ app.get('/api/premios', (req, res) => {
 
 // ============ RUTAS PARA NÚMEROS DE RIFA (NUEVO) ============
 
-// GET /api/numeros/:premioId - Obtener números disponibles de un premio
 app.get('/api/numeros/:premioId', (req, res) => {
   const { premioId } = req.params;
-  const { estado = 'disponible' } = req.query;
-  
-  console.log(`🔢 Solicitando números para premio ${premioId}, estado: ${estado}`);
-  
-  let query = `SELECT numero, estado, email FROM numeros_rifa WHERE premio_id = ?`;
-  let params = [premioId];
-  
-  if (estado !== 'all') {
-    query += ` AND estado = ?`;
-    params.push(estado);
-  }
-  
-  query += ` ORDER BY numero ASC`;
-  
-  db.all(query, params, (err, rows) => {
-    if (err) {
-      console.error('❌ Error obteniendo números:', err);
-      return res.status(500).json({ error: 'Error interno' });
+
+  db.all(
+    `SELECT numero, estado, email
+     FROM numeros
+     WHERE premio_id = ?
+     ORDER BY numero`,
+    [premioId],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: 'Error obteniendo números' });
+      }
+
+      res.json({
+        success: true,
+        numeros: rows
+      });
     }
+  );
+});
+
     
     // Obtener también información del premio
     db.get(
@@ -621,6 +634,28 @@ app.post('/api/webhook', async (req, res) => {
 
         // 4. Si el pago fue aprobado, actualizar stock, vendidos y números
         if (mpPayment.status === 'approved') {
+          // Asignar números vendidos
+db.all(
+  `SELECT id, numero FROM numeros
+   WHERE premio_id = ?
+   AND estado = 'disponible'
+   LIMIT ?`,
+  [compra.premio_id, compra.cantidad],
+  (err, numerosAsignados) => {
+    if (err) return;
+
+    numerosAsignados.forEach(n => {
+      db.run(
+        `UPDATE numeros
+         SET estado = 'vendido',
+             email = ?,
+             payment_id = ?
+         WHERE id = ?`,
+        [compra.email, paymentId, n.id]
+      );
+    });
+  }
+);
           console.log(`✅ Pago aprobado: ${paymentId} para compra ${compra.id}`);
           
           // Obtener datos de la compra
@@ -2285,6 +2320,13 @@ app.post('/api/admin/premios', (req, res) => {
       }
       
       const nuevoId = this.lastID;
+      // Crear números reales para el premio
+for (let i = 1; i <= parseInt(stock); i++) {
+  db.run(
+    `INSERT INTO numeros (premio_id, numero) VALUES (?, ?)`,
+    [nuevoId, i]
+  );
+}
       console.log(`✅ [ADMIN] Premio creado: ID=${nuevoId}, "${nombre}"`);
       
       res.status(201).json({
