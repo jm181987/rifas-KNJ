@@ -31,6 +31,10 @@ app.use(cors({
 }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
+/* RUTA PRINCIPAL */
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // ============ BASE DE DATOS ============
 const db = new sqlite3.Database('rifas_produccion.db', (err) => {
@@ -2702,7 +2706,18 @@ app.get('/api/debug-numeros/:premioId', (req, res) => {
   });
 });
 
+
+
+
+
+
 // ============ MANEJO DE ERRORES ============
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Ruta no encontrada',
+    path: req.path
+  });
+});
 
 // Middleware para rutas no encontradas
 app.use((req, res, next) => {
