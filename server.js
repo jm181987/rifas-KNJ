@@ -19,8 +19,8 @@ const client = new MercadoPagoConfig({
 });
 
 // ============ CONFIGURACIÓN SERVIDOR ============
-const DOMINIO = 'http://localhost:3000';
-const PUERTO = 3000;
+const DOMINIO = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+const PUERTO = process.env.PORT || 3000;
 
 
 
@@ -2727,6 +2727,7 @@ app.use((err, req, res, next) => {
 
 // ============ INICIAR SERVIDOR ============
 app.listen(PUERTO, () => {
+  console.log(`🚀 SERVIDOR ACTIVO en puerto ${PUERTO}`);
   console.log(`🚀 SERVIDOR DE PRODUCCIÓN ACTIVO en ${DOMINIO}`);
   console.log(`💰 MERCADOPAGO: MODO PRODUCCIÓN`);
   console.log(`🔢 SISTEMA DE NÚMEROS: ACTIVADO`);
