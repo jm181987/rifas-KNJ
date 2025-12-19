@@ -10,8 +10,8 @@ const app = express();
 
 
 // ============ CONFIGURACIÓN MERCADOPAGO REAL ============
-const MP_ACCESS_TOKEN = 'APP_USR-5767269400108111-121011-4cffa1d6521c32952b93d4a153bc6568-81252460';
-const MP_PUBLIC_KEY = 'APP_USR-6ef35d3e-1d77-4066-adcd-5c520bd96081';
+const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+const MP_PUBLIC_KEY = process.env.MP_PUBLIC_KEY;
 
 const client = new MercadoPagoConfig({
   accessToken: MP_ACCESS_TOKEN,
