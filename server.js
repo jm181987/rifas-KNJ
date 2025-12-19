@@ -20,6 +20,23 @@ const client = new MercadoPagoConfig({
 const DOMINIO = 'http://localhost:3000';
 const PUERTO = 3000;
 
+
+const app = express();
+
+app.use(express.json());
+
+/* SERVIR FRONTEND */
+app.use(express.static("public"));
+
+/* OPCIONAL: fallback al index */
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve("public", "index.html"));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Servidor en puerto", PORT);
+});
 // ============ MIDDLEWARE ============
 app.use(cors({
   origin: DOMINIO,
