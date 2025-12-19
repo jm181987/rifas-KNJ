@@ -215,7 +215,7 @@ app.get('/api/numeros/:premioId', (req, res) => {
               vendidos: premio?.vendidos || 0,
               disponibles
             }
-          }); 
+          });
         }
       );
     }
